@@ -42,7 +42,6 @@ except subprocess.CalledProcessError:
     exit(1)
 
 while True:
-    # read NAME; koji list-targets --name=$NAME; koji taginfo $NAME| grep "Arches:"
     # 1. Get user input
     release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
     m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
@@ -103,11 +102,12 @@ while True:
             messages=[
                 {"role": "system", "content": f"This is your identity and purpose {SYSTEM_PROMPT}"},
             ]
-        )        bash_command = response['choices'][0]['message']['content'].strip()
+        )        
+        bash_command = completion.choices[0].message.content.strip()
         match = re.search(r"```(?:bash)?\s*\n([^\n]+)", bash_command)
         new_command = match.group(1).strip()
         print(f"\nGenerated Bash Command:\n{new_command}")
-
+    
         # 3. Confirm before executing
         confirm = input("\nDo you want to execute this command? (y/n)\n> ")
 
