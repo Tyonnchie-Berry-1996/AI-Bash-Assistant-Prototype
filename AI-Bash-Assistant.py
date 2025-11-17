@@ -1,5 +1,5 @@
-#!/usr/bin/python3.9
-import openai
+#!/usr/bin/python3
+from openai import OpenAI
 import subprocess
 import re
 import textwrap
@@ -18,16 +18,16 @@ try:
     api_key = result.stdout.strip()
 
     if api_key:
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         print("API key set from bashrc\n")
 
     if api_key == "" :
-        api_key_file = "/home/temp-holder.txt"
+        api_key_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
         print("No API key found, setting temporary placeholder.")
         input_user = input("\nCopy and paste your open API key\n> ")
         set_key = subprocess.run([f"echo {input_user} > {api_key_file}"], shell=True, check=True)
         user_key = subprocess.check_output(["cat", api_key_file], text=True).strip()
-        openai.api_key = user_key
+        client = OpenAI(api_key=user_key)
 
 
 except subprocess.CalledProcessError:
@@ -98,13 +98,12 @@ while True:
 
     # 2. Send prompt to OpenAI to generate bash command
     try:
-        response = openai.ChatCompletion.create(
+        completion = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"This is your identity and purpose {SYSTEM_PROMPT}"},
             ]
-        )
-        bash_command = response['choices'][0]['message']['content'].strip()
+        )        bash_command = response['choices'][0]['message']['content'].strip()
         match = re.search(r"```(?:bash)?\s*\n([^\n]+)", bash_command)
         new_command = match.group(1).strip()
         print(f"\nGenerated Bash Command:\n{new_command}")
@@ -121,4 +120,3 @@ while True:
 
     except Exception as e:
         print("Something went wrong, try again:")
-
