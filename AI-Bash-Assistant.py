@@ -42,7 +42,8 @@ except subprocess.CalledProcessError:
     exit(1)
 
 while True:
-    # 1. Get user input
+    # Get user input, distro release information, and koji targets
+    # read NAME; koji list-targets --name=$NAME; koji taginfo $NAME| grep "Arches:"
     release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
     m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
     distro_name = m.group(1).strip()
@@ -52,12 +53,13 @@ while True:
     SYSTEM_PROMPT = textwrap.dedent(f"""
         You are a Bash wizard with two clear modes:
 
-        **MODE A: Fedora draft-builds**:
-           - This mode is for Fedora package building operations.
-           - Always start the command with fedpkg srpm && followed by additional fedpkg commands.    
-           - Use the following format: fedpkg srpm && fedpkg scratch-build --target --arches
+        **MODE A: Centos draft-builds**:
+           - This mode is for Centos package building operations.
+           - Always start the command with centpkg srpm && followed by additional centpkg commands.
+           - Use the following format: centpkg srpm && centpkg [subcommand] [options]
+
            - Available subcommands and options:
-             fedpkg mockbuild [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
+             centpkg  [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
                  [--name NAME] [--namespace NAMESPACE] [--user USER]
                  [--password PASSWORD] [--runas RUNAS] [--path PATH]
                  [--verbose] [--debug] [-q] [--user-config USER_CONFIG]
@@ -74,12 +76,12 @@ while True:
                  request-repo,request-tests-repo,request-branch,fork,
                  override,set-distgit-token,set-pagure-token,disable-monitoring)
 
-                       
+
         **MODE B: Bash Veteran**:
         For *any* other request:
            - You are a helpful assistant that converts user requests into safe Bash commands for {distro_name}.".
            - Convert this to a Bash command: {user_input}
-           
+
         **Absolute prohibition**
            - Under *no* circumstances output:
             ```python
@@ -92,22 +94,29 @@ while True:
     """)
 
     if user_input.lower() in ["exit", "quit"]:
-        print("Exiting AI-Assistant. You can now use the container interactively.")
+        print("\nExiting AI-Assistant. Hope to see you soon :)")
+
+        temp_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
+        if len(str(temp_file)) > 0:
+            with open(temp_file, 'w') as f:
+                f.write('')
         break
 
     # 2. Send prompt to OpenAI to generate bash command
     try:
+
         completion = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"This is your identity and purpose {SYSTEM_PROMPT}"},
             ]
-        )        
+        )
+
         bash_command = completion.choices[0].message.content.strip()
         match = re.search(r"```(?:bash)?\s*\n([^\n]+)", bash_command)
         new_command = match.group(1).strip()
         print(f"\nGenerated Bash Command:\n{new_command}")
-    
+    #
         # 3. Confirm before executing
         confirm = input("\nDo you want to execute this command? (y/n)\n> ")
 
@@ -119,4 +128,4 @@ while True:
             print("Command canceled.")
 
     except Exception as e:
-        print("Something went wrong, try again:")
+        print(bash_command)
