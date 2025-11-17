@@ -22,7 +22,7 @@ try:
         print("API key set from bashrc\n")
 
     if api_key == "" :
-        api_key_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
+        api_key_file = "/home/src/AI-Bash-Assistant-Prototype/temp-holder.txt"
         print("No API key found, setting temporary placeholder.")
         input_user = input("\nCopy and paste your open API key\n> ")
         set_key = subprocess.run([f"echo {input_user} > {api_key_file}"], shell=True, check=True)
