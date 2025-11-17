@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-from openai import OpenAI
+#!/usr/bin/python3.9
+import openai
 import subprocess
 import re
 import textwrap
@@ -18,16 +18,16 @@ try:
     api_key = result.stdout.strip()
 
     if api_key:
-        client = OpenAI(api_key=api_key)
+        openai.api_key = api_key
         print("API key set from bashrc\n")
 
     if api_key == "" :
-        api_key_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
+        api_key_file = "/home/temp-holder.txt"
         print("No API key found, setting temporary placeholder.")
         input_user = input("\nCopy and paste your open API key\n> ")
         set_key = subprocess.run([f"echo {input_user} > {api_key_file}"], shell=True, check=True)
         user_key = subprocess.check_output(["cat", api_key_file], text=True).strip()
-        client = OpenAI(api_key=user_key)
+        openai.api_key = user_key
 
 
 except subprocess.CalledProcessError:
@@ -42,8 +42,8 @@ except subprocess.CalledProcessError:
     exit(1)
 
 while True:
-    # Get user input, distro release information, and koji targets
     # read NAME; koji list-targets --name=$NAME; koji taginfo $NAME| grep "Arches:"
+    # 1. Get user input
     release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
     m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
     distro_name = m.group(1).strip()
@@ -53,13 +53,12 @@ while True:
     SYSTEM_PROMPT = textwrap.dedent(f"""
         You are a Bash wizard with two clear modes:
 
-        **MODE A: Centos draft-builds**:
-           - This mode is for Centos package building operations.
-           - Always start the command with centpkg srpm && followed by additional centpkg commands.
-           - Use the following format: centpkg srpm && centpkg [subcommand] [options]
-
+        **MODE A: Fedora draft-builds**:
+           - This mode is for Fedora package building operations.
+           - Always start the command with fedpkg srpm && followed by additional fedpkg commands.    
+           - Use the following format: fedpkg srpm && fedpkg scratch-build --target --arches
            - Available subcommands and options:
-             centpkg  [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
+             fedpkg mockbuild [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
                  [--name NAME] [--namespace NAMESPACE] [--user USER]
                  [--password PASSWORD] [--runas RUNAS] [--path PATH]
                  [--verbose] [--debug] [-q] [--user-config USER_CONFIG]
@@ -76,12 +75,12 @@ while True:
                  request-repo,request-tests-repo,request-branch,fork,
                  override,set-distgit-token,set-pagure-token,disable-monitoring)
 
-
+                       
         **MODE B: Bash Veteran**:
         For *any* other request:
            - You are a helpful assistant that converts user requests into safe Bash commands for {distro_name}.".
            - Convert this to a Bash command: {user_input}
-
+           
         **Absolute prohibition**
            - Under *no* circumstances output:
             ```python
@@ -94,29 +93,22 @@ while True:
     """)
 
     if user_input.lower() in ["exit", "quit"]:
-        print("\nExiting AI-Assistant. Hope to see you soon :)")
-
-        temp_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
-        if len(str(temp_file)) > 0:
-            with open(temp_file, 'w') as f:
-                f.write('')
+        print("Exiting AI-Assistant. You can now use the container interactively.")
         break
 
     # 2. Send prompt to OpenAI to generate bash command
     try:
-
-        completion = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"This is your identity and purpose {SYSTEM_PROMPT}"},
             ]
         )
-
-        bash_command = completion.choices[0].message.content.strip()
+        bash_command = response['choices'][0]['message']['content'].strip()
         match = re.search(r"```(?:bash)?\s*\n([^\n]+)", bash_command)
         new_command = match.group(1).strip()
         print(f"\nGenerated Bash Command:\n{new_command}")
-    #
+
         # 3. Confirm before executing
         confirm = input("\nDo you want to execute this command? (y/n)\n> ")
 
@@ -128,4 +120,5 @@ while True:
             print("Command canceled.")
 
     except Exception as e:
-        print(bash_command)
+        print("Something went wrong, try again:")
+
