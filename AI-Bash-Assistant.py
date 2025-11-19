@@ -22,7 +22,7 @@ try:
         print("API key set from bashrc\n")
 
     if api_key == "" :
-        api_key_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
+        api_key_file = "/home/src/AI-Bash-Assistant-Prototype/temp-holder.txt"
         print("No API key found, setting temporary placeholder.")
         input_user = input("\nCopy and paste your open API key\n> ")
         set_key = subprocess.run([f"echo {input_user} > {api_key_file}"], shell=True, check=True)
@@ -42,8 +42,6 @@ except subprocess.CalledProcessError:
     exit(1)
 
 while True:
-    # Get user input, distro release information, and koji targets
-    # read NAME; koji list-targets --name=$NAME; koji taginfo $NAME| grep "Arches:"
     release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
     m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
     distro_name = m.group(1).strip()
@@ -53,10 +51,10 @@ while True:
     SYSTEM_PROMPT = textwrap.dedent(f"""
         You are a Bash wizard with two clear modes:
 
-        **MODE A: Fedora draft-builds**:
+        **MODE A: Fedora scratch-builds**:
            - This mode is for Fedora package building operations.
            - Always start the command with fedpkg srpm && followed by additional fedpkg commands.    
-           - Use the following format: fedpkg srpm && fedpkg scratch-build --target --arches
+           - Use the following format: fedpkg srpm && fedpkg scratch-build --target 
            - Available subcommands and options:
              fedpkg mockbuild [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
                  [--name NAME] [--namespace NAMESPACE] [--user USER]
@@ -95,7 +93,7 @@ while True:
     if user_input.lower() in ["exit", "quit"]:
         print("\nExiting AI-Assistant. Hope to see you soon :)")
 
-        temp_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
+        temp_file = "/home/src/AI-Bash-Assistant-Prototype/temp-holder.txt"
         if len(str(temp_file)) > 0:
             with open(temp_file, 'w') as f:
                 f.write('')
