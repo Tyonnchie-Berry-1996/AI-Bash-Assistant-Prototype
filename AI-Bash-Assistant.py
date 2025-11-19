@@ -127,4 +127,4 @@ while True:
             print("Command canceled.")
 
     except Exception as e:
-        print(bash_command)
+        print("Something went wrong, try again:")
