@@ -22,7 +22,7 @@ try:
         print("API key set from bashrc\n")
 
     if api_key == "" :
-        api_key_file = "/home/src/AI-Bash-Assistant-Prototype/temp-holder.txt"
+        api_key_file = f"{home_base}/src/Python-Scripts/tmp/temp-holder.txt"
         print("No API key found, setting temporary placeholder.")
         input_user = input("\nCopy and paste your open API key\n> ")
         set_key = subprocess.run([f"echo {input_user} > {api_key_file}"], shell=True, check=True)
@@ -53,13 +53,12 @@ while True:
     SYSTEM_PROMPT = textwrap.dedent(f"""
         You are a Bash wizard with two clear modes:
 
-        **MODE A: Centos draft-builds**:
-           - This mode is for Centos package building operations.
-           - Always start the command with centpkg srpm && followed by additional centpkg commands.
-           - Use the following format: centpkg srpm && centpkg [subcommand] [options]
-
+        **MODE A: Fedora draft-builds**:
+           - This mode is for Fedora package building operations.
+           - Always start the command with fedpkg srpm && followed by additional fedpkg commands.    
+           - Use the following format: fedpkg srpm && fedpkg scratch-build --target --arches
            - Available subcommands and options:
-             centpkg  [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
+             fedpkg mockbuild [-h] [--config CONFIG] [--dry-run] [--release RELEASE]
                  [--name NAME] [--namespace NAMESPACE] [--user USER]
                  [--password PASSWORD] [--runas RUNAS] [--path PATH]
                  [--verbose] [--debug] [-q] [--user-config USER_CONFIG]
@@ -116,7 +115,7 @@ while True:
         match = re.search(r"```(?:bash)?\s*\n([^\n]+)", bash_command)
         new_command = match.group(1).strip()
         print(f"\nGenerated Bash Command:\n{new_command}")
-    #
+    
         # 3. Confirm before executing
         confirm = input("\nDo you want to execute this command? (y/n)\n> ")
 
