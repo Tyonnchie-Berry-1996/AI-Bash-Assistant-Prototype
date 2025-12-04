@@ -4,6 +4,6 @@ It acts as a safety layer between user, model, and terminal; look at it as a saf
 
 This script is meant to be ran in DevEnv (container). You can find it here: https://github.com/Tyonnchie-Berry-1996/DevEnv
 
-If you want a version you can run on your local machine and you're an experimental wizard you can find that soon and I will link it once it in the description is up.
+If you want a version you can run on your local machine and you're an experimental wizard you can find that soon and I will link it in the description once it's up.
 
    
