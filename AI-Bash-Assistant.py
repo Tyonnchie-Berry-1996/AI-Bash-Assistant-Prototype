@@ -139,7 +139,7 @@ while True:
 
                          """)
                                       
-             completion = client.chat.completions.create(
+            completion = client.chat.completions.create(
                 model="gpt-5.2",
                 messages=[
                     {"role": "system", "content": f"This is your identity and purpose {MODE_B}"},
