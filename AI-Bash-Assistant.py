@@ -5,6 +5,7 @@ import subprocess
 import re
 import textwrap
 import os
+import readline
 
 try:
     expanded_path = os.path.expandvars('$HOME/.bashrc')
@@ -42,6 +43,10 @@ except subprocess.CalledProcessError:
 
 while True:
     try:
+        readline.parse_and_bind("set editing-mode emacs")
+        readline.parse_and_bind('"\\e[D": backward-char')
+        readline.parse_and_bind('"\\e[C": forward-char')
+        
         release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
         m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
         distro_name = m.group(1).strip()
