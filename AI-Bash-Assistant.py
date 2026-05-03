@@ -7,6 +7,7 @@ import textwrap
 import os
 import readline
 
+
 try:
     expanded_path = os.path.expandvars('$HOME/.bashrc')
     home_base = os.environ['HOME']
@@ -46,7 +47,7 @@ while True:
         readline.parse_and_bind("set editing-mode emacs")
         readline.parse_and_bind('"\\e[D": backward-char')
         readline.parse_and_bind('"\\e[C": forward-char')
-        
+
         release_info = subprocess.check_output(["grep", "-i", "NAME", "/etc/os-release"], text=True)
         m = re.search(r'NAME=["\']?(.+?)["\']?$', release_info)
         distro_name = m.group(1).strip()
@@ -77,12 +78,12 @@ while True:
             - The wizard should always attempt a useful response before giving up.
 
         """)
-        
+
         if user_input.lower() in ["scratch build", "kernel build", "mock build",
                                   "scratch-build", "kernel-build", "mock-build",
                                   "scratchbuild", "kernelbuild", "mockbuild"]:
-            
-            
+
+
 
             print("\nPick one from the list below\n")
             subprocess.run(["koji list-targets"], shell=True, check=True)
@@ -97,6 +98,7 @@ while True:
 
             subprocess.run(["../arches.sh"])
             arches = input("\nPaste your pick\n")
+
 
             MODE_B = textwrap.dedent(f"""
                 You are a Bash wizard with 2 clear modes:
@@ -166,7 +168,7 @@ while True:
 
             else:
                 print("Command canceled.")
-                
+
         if user_input.lower() in ["exit", "quit"]:
             print("\nExiting AI-Assistant. Hope to see you soon :)")
 
@@ -175,8 +177,11 @@ while True:
                 with open(temp_file, 'w') as f:
                     f.write('')
             exit(1)
+    
+        if user_input.lower() not in ["scratch build", "kernel build", "mock build",
+                                      "scratch-build", "kernel-build", "mock-build",
+                                      "scratchbuild", "kernelbuild", "mockbuild"]:
             
-        else:
             completion = client.chat.completions.create(
                 model="gpt-5.2",
                 messages=[
@@ -198,6 +203,6 @@ while True:
 
             else:
                 print("Command canceled.")
-            
+
     except ExceptionGroup as e:
         print(e)
